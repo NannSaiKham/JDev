@@ -1,0 +1,120 @@
+// Online C# Editor for free
+// Write, Edit and Run your C# code using C# Online Compiler
+
+using System;
+using System.Collections.Generic;
+
+public class HelloWorld
+{
+    public static char[] inputCharArr=new char[15];
+    public static List<string> originalList=new List<string>();
+    
+    public static int CalTotalValue(IDictionary<string,int> dArray,List<string> numList){
+        int totalVal=0;
+        for(int key=0;key<numList.Count;key++){
+            int fVal=dArray[numList[key]];
+            int sVal=key==(numList.Count-1)?0:dArray[numList[key+1]];
+            int fKey=Int32.Parse(numList[key].Split('_')[0]);
+            int sKey=key==(numList.Count-1)?0:Int32.Parse(numList[key+1].Split('_')[0]);
+            
+            if(fKey>sKey){
+                totalVal=totalVal+fVal;
+            }
+            else{
+                totalVal=totalVal+(sVal-fVal);
+                key=key+1;
+            }
+        }
+        return totalVal;
+    }
+    
+    public static string CreateKey(IDictionary<string,int> dArray, string newKey){
+        bool isExist=dArray.ContainsKey(newKey);
+        if(isExist){
+            var gId=Guid.NewGuid().ToString();
+            return string.Concat(newKey,"_",gId);
+        }
+        else{
+            return newKey;
+        }
+    }
+    
+    public static void Main(string[] args)
+    {
+       IDictionary<string,int> arr=new Dictionary<string,int>();
+       arr.Add("A",1); arr.Add("B",5); arr.Add("Z",10); arr.Add("L",50); arr.Add("C",100);
+       arr.Add("D",500);arr.Add("R",1000);
+       
+       Console.WriteLine("Enter some letter to get total amount (Only allowed : A B Z L C D R) : ");
+       
+       string inputStr=Console.ReadLine();
+       inputStr=inputStr.ToUpper();
+       inputCharArr=inputStr.ToCharArray();
+       IDictionary<string,int> resultList=new Dictionary<string,int>();
+       
+     //validate max lenght
+     if(inputCharArr.Length<=15){
+          int sameValTotal=0;
+       for(int index=0;index<inputCharArr.Length;index++){
+           // Checking user input key it includes in our define words collection
+           bool isContain=arr.ContainsKey(inputCharArr[index].ToString());
+           
+           bool isLastCount=false;
+           if((inputCharArr.Length-1)==index){
+               isLastCount=true;
+           }
+           
+           bool isPrefixSame=index==0?false:(inputCharArr[index-1].ToString()==inputCharArr[index].ToString());
+           
+           bool isPostfixSame=isLastCount?false:(inputCharArr[index].ToString()==inputCharArr[index+1].ToString());
+           
+           // if included, will collect value to list
+           if(isContain){
+               
+               if((!isPrefixSame && isPostfixSame) ||
+               (isPrefixSame && isPostfixSame)){
+                   int chVal=arr[inputCharArr[index].ToString()];
+                   sameValTotal=sameValTotal+chVal;
+               }
+               else if(isPrefixSame && !isPostfixSame){
+                   
+                   int originalVal=arr[inputCharArr[index].ToString()];
+                   
+                   sameValTotal=sameValTotal+originalVal;
+                   
+                   //Check new key is already exist in the list
+                   string newKey=CreateKey(resultList,originalVal.ToString());
+                   
+                   
+                   resultList.Add(newKey,sameValTotal);
+                   
+                   originalList.Add(newKey);
+                   
+                   //reset same total value
+                   sameValTotal=0;
+               }
+               else if(!isPrefixSame && !isPostfixSame){
+                   int originalVal=arr[inputCharArr[index].ToString()];
+                   
+                   string newKey=CreateKey(resultList,originalVal.ToString());
+                   
+                    resultList.Add(newKey,originalVal);
+                    
+                    originalList.Add(newKey);
+               }
+               
+           }
+           // if does not included, then skip
+       }
+       
+       
+       // Calculate for user input word's value
+       int totalAmt=CalTotalValue(resultList,originalList);
+       
+       Console.WriteLine("Total amount is : {0}",totalAmt);
+     }
+     else{
+         Console.WriteLine("Your enter length is more than 15");
+     }
+    }
+}
